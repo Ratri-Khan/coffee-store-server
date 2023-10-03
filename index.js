@@ -1,7 +1,7 @@
 const express = require('express');
 var cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -25,26 +25,32 @@ async function run() {
     await client.connect();
 
     const coffeeCollection = client.db("coffeeDB").collection("coffee");
-    // const coffee = coffeeCollection.collection("coffee");
 
+    app.post('/coffee', async(req, res) => {
+      const newCoffee = req.body;//this line for: get data from client site
+      console.log(newCoffee);
+      const result = await coffeeCollection.insertOne(newCoffee); //this line for:data sent here to mongoDB for store
+      res.send(result);
+    })
     app.get('/coffee',async(req,res) =>{
       const cursor = coffeeCollection.find();
       const result = await cursor.toArray();
       res.send(result);
-    })
+    })//this code for: get data here from mongoDB
+
     app.delete('/coffee/:id',async(req,res) =>{
       const id = req.params.id;
-      const query = {_id: new Object(id)}
+      const query = {_id: new ObjectId(id)}
       const result = await coffeeCollection.deleteOne(query);
+      res.send(result)
+    })//This code for delete
+    
+    app.get('/coffee/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await coffeeCollection.findOne(query);
       res.send(result);
-    })
-
-    app.post('/coffee',async(req,res) =>{
-        const newCoffee = req.body;
-        console.log(newCoffee);
-        const result = await coffeeCollection.insertOne(newCoffee);
-        res.send(result)
-    })
+  })
 
 
 
@@ -68,9 +74,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Coffee store server is running')
-  })
-  
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-  })
+  res.send('Coffee store server is running')
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
