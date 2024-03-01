@@ -1,12 +1,13 @@
 const express = require('express');
-var cors = require('cors');
+const app = express();
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const app = express();
+const cors = require('cors');
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.PASSWORD}@cluster0.pluunuw.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -22,43 +23,34 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-
+    // await client.connect();
     const coffeeCollection = client.db("coffeeDB").collection("coffee");
 
-    app.post('/coffee', async(req, res) => {
-      const newCoffee = req.body;//this line for: get data from client site
+    app.post('/coffee',async(req,res) =>{
+      const newCoffee = req.body;
       console.log(newCoffee);
-      const result = await coffeeCollection.insertOne(newCoffee); //this line for:data sent here to mongoDB for store
+      const result = await coffeeCollection.insertOne(newCoffee);
       res.send(result);
     })
+
     app.get('/coffee',async(req,res) =>{
       const cursor = coffeeCollection.find();
       const result = await cursor.toArray();
       res.send(result);
-    })//this code for: get data here from mongoDB
-
+    })
     app.delete('/coffee/:id',async(req,res) =>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
       const result = await coffeeCollection.deleteOne(query);
       res.send(result)
     })//This code for delete
-    
-    app.get('/coffee/:id', async(req, res) => {
-      const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+
+    app.get('/coffee/:id',async(req,res) =>{
+      const id  = req.params.id;
+      const query = {_id :new ObjectId(id)}
       const result = await coffeeCollection.findOne(query);
-      res.send(result);
-  })
-
-
-
-
-
-
-
-
+      res.send(result)
+    })
 
 
 
@@ -73,10 +65,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/', (req, res) => {
-  res.send('Coffee store server is running')
-})
 
+app.get('/',(req,res)=>{
+  res.send('coffee house')
+});
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
